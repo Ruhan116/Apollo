@@ -3,6 +3,15 @@ Apollo Backend - FastAPI Application Entry Point
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from app.database import create_tables
+from app.routers import auth
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: Create tables
+    await create_tables()
+    yield
 
 app = FastAPI(
     title="Apollo API",
@@ -10,6 +19,7 @@ app = FastAPI(
     version="1.0.0",
     docs_url="/api/docs",
     redoc_url="/api/redoc",
+    lifespan=lifespan
 )
 
 # CORS Configuration
@@ -46,7 +56,7 @@ async def health_check():
 
 
 # TODO: Register routers when implemented
-from app.routers import auth, goals, ai, community, notes
+from app.routers import auth
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
 # app.include_router(goals.router, prefix="/api/goals", tags=["Goals"])
 # app.include_router(ai.router, prefix="/api/chat", tags=["AI Mentor"])

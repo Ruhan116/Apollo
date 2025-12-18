@@ -1,4 +1,5 @@
 from app.schemas.auth import UserCreate, UserLogin
+from sqlalchemy.ext.asyncio import AsyncSession
 from email_validator import validate_email, EmailNotValidError
 from password_validator import PasswordValidator
 from app.repositories.user import UserRepository
@@ -11,23 +12,24 @@ from dotenv import load_dotenv
 import os
 from pathlib import Path
 
-# Load environment variables from .env file in repository
+# Load environment variables from .env file
 env_path = Path(__file__).resolve().parent.parent.parent / '.env'
 load_dotenv(dotenv_path=env_path)
 
 # Configuration
-SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = os.getenv("JWT_SECRET_KEY")
 if not SECRET_KEY:
     raise ValueError("SECRET_KEY not found in .env file")
-ALGORITHM = os.getenv("ALGORITHM", "HS256")
-ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "30"))
+ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_HOURS", "30")) * 60
 
 # Password hashing context
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 class AuthService:
-    def __init__(self):
-        self.user_repo = UserRepository()
+    def __init__(self, db: AsyncSession):
+        self.user_repo = UserRepository(db) 
+        self.db = db
     
     def _hash_password(self, password: str) -> str:
         return pwd_context.hash(password)
@@ -70,7 +72,7 @@ class AuthService:
         if not schema.validate(user_data.password):
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Password must be 8-100 characters with uppercase, lowercase, and digits"
+                detail="Password must be 8-100 characters and must contain uppercase, lowercase, and digits"
             )
         
         # Check if user already exists
