@@ -56,9 +56,9 @@ async def health_check():
 
 
 # TODO: Register routers when implemented
-from app.routers import auth
+from app.routers import auth, goals
 app.include_router(auth.router, prefix="/api/auth", tags=["Authentication"])
-# app.include_router(goals.router, prefix="/api/goals", tags=["Goals"])
+app.include_router(goals.router, prefix="/api/goals", tags=["Goals"])
 # app.include_router(ai.router, prefix="/api/chat", tags=["AI Mentor"])
 # app.include_router(community.router, prefix="/api/forums", tags=["Community"])
 # app.include_router(notes.router, prefix="/api/notes", tags=["Notes"])

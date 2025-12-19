@@ -40,3 +40,6 @@ httpx
 black
 ruff
 mypy
+
+#gemini 
+google-genai
