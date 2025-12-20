@@ -1,0 +1,12 @@
+# Auth Service Dependencies
+
+# Include shared dependencies
+-r ../../shared/requirements.txt
+
+# Auth-specific
+email-validator
+password-validator
+python-jose[cryptography]
+passlib[bcrypt]
+# Argon2 backend for password hashing
+argon2-cffi

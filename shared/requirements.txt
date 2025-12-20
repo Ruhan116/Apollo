@@ -1,0 +1,31 @@
+# Shared dependencies for all microservices
+
+# FastAPI and Server
+fastapi
+uvicorn
+python-multipart
+
+# Database
+sqlalchemy
+asyncpg
+
+# Validation
+pydantic
+pydantic-settings
+
+# Environment
+python-dotenv
+
+# Observability - Tracing
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-sqlalchemy
+opentelemetry-instrumentation-httpx
+
+# Observability - Metrics
+prometheus-client
+prometheus-fastapi-instrumentator
+
+# HTTP Client
+httpx

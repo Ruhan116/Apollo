@@ -2,9 +2,15 @@ from app.repositories.goals import GoalRepository, SubgoalRepository, ActionRepo
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.prompts.system import SYS_PROMPT
 from app.models.goals import Goal, SubGoal, Actions, GoalStatus, SubgoalCategory
+from app.core.circuit_breaker import gemini_circuit_breaker
+from app.core.logging import get_logger
+from app.core.metrics import gemini_api_calls, gemini_api_duration
 from google import genai
 import json
+import time
 from typing import Dict, List, Tuple, Optional
+
+logger = get_logger("apollo.goals")
 
 
 class GoalService:
@@ -15,13 +21,43 @@ class GoalService:
         self.db = db 
         self.client = genai.Client()
     
-    def make_llm_request(self, prompt: str) -> str:
-        """Make a request to the LLM and return the response text."""
-        response = self.client.models.generate_content(
-            model="gemini-3-pro-preview",
-            contents=SYS_PROMPT + "\n\nUser Goal: " + prompt,
-        )
-        return response.text
+    @gemini_circuit_breaker
+    async def make_llm_request(self, prompt: str) -> str:
+        """Make a request to the LLM and return the response text (with circuit breaker)."""
+        start_time = time.time()
+
+        try:
+            logger.info("Making Gemini API request", extra={"extra_fields": {"prompt_length": len(prompt)}})
+
+            # Make synchronous API call (Gemini client is sync)
+            response = self.client.models.generate_content(
+                model="gemini-3-pro-preview",
+                contents=SYS_PROMPT + "\n\nUser Goal: " + prompt,
+            )
+
+            # Record success metrics
+            duration = time.time() - start_time
+            gemini_api_duration.observe(duration)
+            gemini_api_calls.labels(status="success").inc()
+
+            logger.info(
+                "Gemini API request successful",
+                extra={"extra_fields": {"duration_ms": round(duration * 1000, 2)}}
+            )
+
+            return response.text
+
+        except Exception as e:
+            # Record failure metrics
+            duration = time.time() - start_time
+            gemini_api_duration.observe(duration)
+            gemini_api_calls.labels(status="error").inc()
+
+            logger.error(
+                f"Gemini API request failed: {str(e)}",
+                extra={"extra_fields": {"error": str(e), "duration_ms": round(duration * 1000, 2)}}
+            )
+            raise
     
     def parse_response(self, response_text: str) -> Tuple[Dict, List[Dict], List[Dict]]:
         """Parse LLM response into goal, subgoals, and actions."""
@@ -72,8 +108,8 @@ class GoalService:
     
     async def create_goal(self, prompt: str, user_id: int) -> Goal:
         """Create a goal with subgoals and actions based on user prompt."""
-        # Get LLM response
-        response_text = self.make_llm_request(prompt)
+        # Get LLM response (now async with circuit breaker)
+        response_text = await self.make_llm_request(prompt)
         
         # Parse the response
         goal_data, subgoals_data, actions_data = self.parse_response(response_text)

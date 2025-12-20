@@ -3,7 +3,22 @@
     "allow": [
       "Bash(mkdir:*)",
       "Bash(npx create-next-app:*)",
-      "Bash(python -m venv:*)"
+      "Bash(python -m venv:*)",
+      "Bash(tree:*)",
+      "Bash(pip install:*)",
+      "Bash(python -m uvicorn:*)",
+      "Bash(curl:*)",
+      "Bash(cat:*)",
+      "Bash(taskkill:*)",
+      "Bash(set:*)",
+      "Bash(cmd //c \"cd /d d:\\Win\\Apollo\\services\\auth-service && start.bat\")",
+      "Bash(cmd //c \"cd /d d:\\Win\\Apollo\\services\\goals-service && start.bat\")",
+      "Bash(export PYTHONPATH=\"d:/Win/Apollo\":*)",
+      "Bash(psql:*)",
+      "Bash(python create_database.py:*)",
+      "Bash(python:*)",
+      "Bash(./start.bat)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []

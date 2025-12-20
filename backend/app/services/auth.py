@@ -23,8 +23,8 @@ if not SECRET_KEY:
 ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("JWT_ACCESS_TOKEN_EXPIRE_HOURS", "30")) * 60
 
-# Password hashing context
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+# Password hashing context — prefer Argon2, keep bcrypt for legacy verification
+pwd_context = CryptContext(schemes=["argon2", "bcrypt"], deprecated="auto")
 
 class AuthService:
     def __init__(self, db: AsyncSession):
@@ -32,7 +32,8 @@ class AuthService:
         self.db = db
     
     def _hash_password(self, password: str) -> str:
-        return pwd_context.hash(password)
+        # Use Argon2 for new hashes
+        return pwd_context.hash(password, scheme="argon2")
     
     def _verify_password(self, plain_password: str, hashed_password: str) -> bool:
         return pwd_context.verify(plain_password, hashed_password)

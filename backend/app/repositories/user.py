@@ -22,3 +22,10 @@ class UserRepository(BaseRepository[User]):
             hashed_password=user_data.password
         )
         return await super().create(user)
+
+    async def update_password(self, user: User, new_hashed_password: str) -> User:
+        user.hashed_password = new_hashed_password
+        self.db.add(user)
+        await self.db.commit()
+        await self.db.refresh(user)
+        return user

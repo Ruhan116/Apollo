@@ -1,0 +1,8 @@
+# Goals Service Dependencies
+
+# Include shared dependencies
+-r ../../shared/requirements.txt
+
+# Goals-specific
+google-generativeai
+google-genai

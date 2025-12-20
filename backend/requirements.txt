@@ -18,6 +18,8 @@ password-validator
 # Authentication
 python-jose[cryptography]
 passlib[bcrypt]
+# Argon2 backend for password hashing
+argon2-cffi
 
 # Rate Limiting
 slowapi
@@ -31,15 +33,31 @@ google-generativeai
 # Environment
 python-dotenv
 
+# Observability - Tracing
+opentelemetry-api
+opentelemetry-sdk
+opentelemetry-instrumentation-fastapi
+opentelemetry-instrumentation-sqlalchemy
+opentelemetry-instrumentation-httpx
+
+# Observability - Metrics
+prometheus-client
+prometheus-fastapi-instrumentator
+
+# Resilience
+circuitbreaker
+
+# HTTP Client for service-to-service communication
+httpx
+
 # Testing
 pytest
 pytest-asyncio
-httpx
 
 # Code Quality (Development)
 black
 ruff
 mypy
 
-#gemini 
+#gemini
 google-genai
