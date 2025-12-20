@@ -158,3 +158,15 @@ class AuthService:
                 detail="Could not validate credentials"
             )
 
+    async def get_current_user(self, token: str):
+        """Get the current user from the JWT token"""
+        payload = await self.verify_token(token)
+        user_id = payload.get("user_id")
+        user = await self.user_repo.get_by_id(user_id)
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found"
+            )
+        return user
+
